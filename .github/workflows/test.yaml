@@ -8,7 +8,6 @@ env:
   AWS_ROLE_ARN: arn:aws:iam::044984354327:role/forGHARole # GitHub Actions OIDC用IAMロール
   ECR_REGISTRY: 044984354327.dkr.ecr.ap-northeast-1.amazonaws.com # ECRレジストリURL
   ECR_REPOSITORY: case2507029833 # ECRリポジトリ名
-  DOCKERFILE: ./docker/Dockerfile
 
 jobs:
   build:
@@ -32,7 +31,6 @@ jobs:
       - uses: docker/build-push-action@v4
         with:
           context: ./
-          file: ${{ env.DOCKERFILE }}
           push: true
           tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           cache-from: type=gha
