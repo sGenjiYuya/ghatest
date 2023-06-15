@@ -1,0 +1,40 @@
+on: push
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_ROLE_ARN: arn:aws:iam::044984354327:role/forGHARole # GitHub Actions OIDC用IAMロール
+  ECR_REGISTRY: 044984354327.dkr.ecr.ap-northeast-1.amazonaws.com # ECRレジストリURL
+  ECR_REPOSITORY: case2507029833 # ECRリポジトリ名
+  DOCKERFILE: ./docker/Dockerfile
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-1
+
+      - uses: aws-actions/amazon-ecr-login@v1
+        id: login-ecr
+
+      - uses: docker/setup-buildx-action@v1
+        id: buildx
+        with:
+          install: true
+
+      - uses: docker/build-push-action@v4
+        with:
+          context: ./
+          file: ${{ env.DOCKERFILE }}
+          push: true
+          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
